@@ -1,77 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Adicionar BSC com RPC Custom</title>
+  <title>Verificador de RPC da BSC</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-    button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #1b1b1b;
+      color: #fff;
+      text-align: center;
+      padding-top: 50px;
+    }
+    input {
+      width: 80%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #f0b90b;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e0a800;
+    }
+    .output {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
 
-  <h1>Adicionar Rede BNB Smart Chain</h1>
+  <h1>🔍 Verificar RPC da Binance Smart Chain</h1>
 
-  <button onclick="addBSCNetwork()">Adicionar BSC na MetaMask</button>
+  <input type="text" id="rpcUrl" placeholder="Cole o URL do RPC aqui" value="https://virtual.binance.rpc.tenderly.co/36e9fd06-d366-4910-b643-65def87b8f69" />
+  <br>
+  <button onclick="checkRPC()">Verificar RPC</button>
 
-  <h2>Adicionar Token Personalizado</h2>
-  <button onclick="addMyToken()">Adicionar Token</button>
+  <div class="output" id="output">Aguardando verificação...</div>
 
   <script>
-    async function addBSCNetwork() {
-      if (typeof window.ethereum === 'undefined') {
-        alert('MetaMask não encontrada!');
-        return;
-      }
+    async function checkRPC() {
+      const url = document.getElementById("rpcUrl").value.trim();
+      const output = document.getElementById("output");
+      output.textContent = "⏳ Testando...";
+
+      const payload = {
+        jsonrpc: "2.0",
+        method: "eth_chainId",
+        params: [],
+        id: 1
+      };
 
       try {
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: '0x38', // 56 decimal => 0x38 hex
-            chainName: 'BNB Smart Chain (Tenderly)',
-            nativeCurrency: {
-              name: 'BNB',
-              symbol: 'BNB',
-              decimals: 18
-            },
-            rpcUrls: ['https://virtual.binance.rpc.tenderly.co/36e9fd06-d366-4910-b643-65def87b8f69'],
-            blockExplorerUrls: ['https://bscscan.com/']
-          }]
-        });
-        console.log('✅ Rede BSC adicionada com RPC Tenderly!');
-      } catch (error) {
-        console.error('Erro ao adicionar rede:', error);
-      }
-    }
-
-    async function addMyToken() {
-      if (typeof window.ethereum === 'undefined') {
-        alert('MetaMask não encontrada!');
-        return;
-      }
-
-      try {
-        const wasAdded = await window.ethereum.request({
-          method: 'wallet_watchAsset',
-          params: {
-            type: 'ERC20',
-            options: {
-              address: '0x1234567890abcdef1234567890abcdef12345678',
-              symbol: 'CTK',
-              decimals: 18,
-              image: 'https://seusite.com/token.png'
-            }
-          }
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
         });
 
-        if (wasAdded) {
-          console.log('✅ Token adicionado!');
+        const data = await res.json();
+
+        if (data && data.result) {
+          const chainIdHex = data.result;
+          const chainIdDecimal = parseInt(chainIdHex, 16);
+
+          const isBSC = chainIdDecimal === 56;
+
+          output.textContent = `✅ RPC funcionando!\n\nChain ID: ${chainIdDecimal} (${chainIdHex})\n\n` +
+            (isBSC
+              ? "✅ É compatível com a Binance Smart Chain (BNB aparecerá na MetaMask)"
+              : "⚠️ Não é a BSC oficial (BNB pode não aparecer automaticamente)."
+            );
         } else {
-          console.log('❌ O usuário rejeitou a adição do token.');
+          output.textContent = "❌ Resposta inválida do servidor RPC.";
         }
       } catch (error) {
-        console.error('Erro ao adicionar token:', error);
+        output.textContent = "❌ Erro ao conectar ao RPC:\n" + error.message;
       }
     }
   </script>
