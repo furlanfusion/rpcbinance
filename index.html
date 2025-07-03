@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Adicionar BSC com RPC Custom</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+    button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <h1>Adicionar Rede BNB Smart Chain</h1>
+
+  <button onclick="addBSCNetwork()">Adicionar BSC na MetaMask</button>
+
+  <h2>Adicionar Token Personalizado</h2>
+  <button onclick="addMyToken()">Adicionar Token</button>
+
+  <script>
+    async function addBSCNetwork() {
+      if (typeof window.ethereum === 'undefined') {
+        alert('MetaMask não encontrada!');
+        return;
+      }
+
+      try {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: '0x38', // 56 decimal => 0x38 hex
+            chainName: 'BNB Smart Chain (Tenderly)',
+            nativeCurrency: {
+              name: 'BNB',
+              symbol: 'BNB',
+              decimals: 18
+            },
+            rpcUrls: ['https://virtual.binance.rpc.tenderly.co/36e9fd06-d366-4910-b643-65def87b8f69'],
+            blockExplorerUrls: ['https://bscscan.com/']
+          }]
+        });
+        console.log('✅ Rede BSC adicionada com RPC Tenderly!');
+      } catch (error) {
+        console.error('Erro ao adicionar rede:', error);
+      }
+    }
+
+    async function addMyToken() {
+      if (typeof window.ethereum === 'undefined') {
+        alert('MetaMask não encontrada!');
+        return;
+      }
+
+      try {
+        const wasAdded = await window.ethereum.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: '0x1234567890abcdef1234567890abcdef12345678',
+              symbol: 'CTK',
+              decimals: 18,
+              image: 'https://seusite.com/token.png'
+            }
+          }
+        });
+
+        if (wasAdded) {
+          console.log('✅ Token adicionado!');
+        } else {
+          console.log('❌ O usuário rejeitou a adição do token.');
+        }
+      } catch (error) {
+        console.error('Erro ao adicionar token:', error);
+      }
+    }
+  </script>
+
+</body>
+</html>
