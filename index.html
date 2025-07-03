@@ -2,25 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Adicionar BSC com RPC Custom</title>
+  <title>Adicionar BSC (Tenderly RPC)</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-    button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    button { padding: 10px 20px; margin: 20px; font-size: 18px; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <h1>Adicionar Rede BNB Smart Chain</h1>
+  <h1>Adicionar BNB Smart Chain (Tenderly)</h1>
 
-  <button onclick="addBSCNetwork()">Adicionar BSC na MetaMask</button>
+  <button onclick="addTenderlyBSC()">Adicionar Rede na MetaMask</button>
 
   <h2>Adicionar Token Personalizado</h2>
   <button onclick="addMyToken()">Adicionar Token</button>
 
   <script>
-    async function addBSCNetwork() {
+    async function addTenderlyBSC() {
       if (typeof window.ethereum === 'undefined') {
-        alert('MetaMask não encontrada!');
+        alert('⚠️ MetaMask não encontrada!');
         return;
       }
 
@@ -28,7 +28,7 @@
         await window.ethereum.request({
           method: 'wallet_addEthereumChain',
           params: [{
-            chainId: '0x38', // 56 decimal => 0x38 hex
+            chainId: '0x38', // 56 decimal = 0x38 hex
             chainName: 'BNB Smart Chain (Tenderly)',
             nativeCurrency: {
               name: 'BNB',
@@ -39,7 +39,7 @@
             blockExplorerUrls: ['https://bscscan.com/']
           }]
         });
-        console.log('✅ Rede BSC adicionada com RPC Tenderly!');
+        console.log('✅ Rede BSC com Tenderly RPC adicionada!');
       } catch (error) {
         console.error('Erro ao adicionar rede:', error);
       }
@@ -47,7 +47,7 @@
 
     async function addMyToken() {
       if (typeof window.ethereum === 'undefined') {
-        alert('MetaMask não encontrada!');
+        alert('⚠️ MetaMask não encontrada!');
         return;
       }
 
@@ -68,7 +68,7 @@
         if (wasAdded) {
           console.log('✅ Token adicionado!');
         } else {
-          console.log('❌ O usuário rejeitou a adição do token.');
+          console.log('❌ Usuário rejeitou.');
         }
       } catch (error) {
         console.error('Erro ao adicionar token:', error);
