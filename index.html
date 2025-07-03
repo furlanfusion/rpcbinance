@@ -1,124 +1,80 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conectar Carteira BSC</title>
+  <title>Adicionar BSC com RPC Custom</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    h1 {
-      color: #333;
-    }
-
-    button {
-      padding: 12px 24px;
-      font-size: 16px;
-      background-color: #f0b90b;
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    button:hover {
-      background-color: #e5a600;
-    }
-
-    .log {
-      margin-top: 20px;
-      background: #fff;
-      padding: 12px;
-      border-radius: 8px;
-      width: 80%;
-      max-width: 600px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      font-family: monospace;
-      white-space: pre-wrap;
-    }
+    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+    button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>Conectar à Binance Smart Chain</h1>
-  <button onclick="connectWallet()">🔗 Conectar Carteira</button>
-  <div class="log" id="log">Aguardando ação...</div>
+
+  <h1>Adicionar Rede BNB Smart Chain</h1>
+
+  <button onclick="addBSCNetwork()">Adicionar BSC na MetaMask</button>
+
+  <h2>Adicionar Token Personalizado</h2>
+  <button onclick="addMyToken()">Adicionar Token</button>
 
   <script>
-    async function connectWallet() {
-      const logEl = document.getElementById('log');
-
+    async function addBSCNetwork() {
       if (typeof window.ethereum === 'undefined') {
-        alert("MetaMask não instalada!");
+        alert('MetaMask não encontrada!');
         return;
       }
 
       try {
-        await window.ethereum.request({ method: 'eth_requestAccounts' })
-          .catch((error) => {
-            if (error.code === 4001) {
-              alert('❌ Conexão rejeitada pelo usuário.');
-            } else {
-              console.error(error);
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: '0x38', // 56 decimal => 0x38 hex
+            chainName: 'BNB Smart Chain (Tenderly)',
+            nativeCurrency: {
+              name: 'BNB',
+              symbol: 'BNB',
+              decimals: 18
+            },
+            rpcUrls: ['https://virtual.binance.rpc.tenderly.co/36e9fd06-d366-4910-b643-65def87b8f69'],
+            blockExplorerUrls: ['https://bscscan.com/']
+          }]
+        });
+        console.log('✅ Rede BSC adicionada com RPC Tenderly!');
+      } catch (error) {
+        console.error('Erro ao adicionar rede:', error);
+      }
+    }
+
+    async function addMyToken() {
+      if (typeof window.ethereum === 'undefined') {
+        alert('MetaMask não encontrada!');
+        return;
+      }
+
+      try {
+        const wasAdded = await window.ethereum.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: '0x1234567890abcdef1234567890abcdef12345678',
+              symbol: 'CTK',
+              decimals: 18,
+              image: 'https://seusite.com/token.png'
             }
-            throw error;
-          });
-
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        logEl.textContent = `✅ Carteira conectada: ${accounts[0]}`;
-
-        try {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x38' }]
-          });
-          logEl.textContent += `\n✅ Rede BSC ativa`;
-        } catch (switchError) {
-          if (switchError.code === 4902) {
-            await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: '0x38',
-                chainName: 'Binance Smart Chain',
-                nativeCurrency: {
-                  name: 'BNB',
-                  symbol: 'BNB',
-                  decimals: 18
-                },
-                rpcUrls: ['https://virtual.binance.rpc.tenderly.co/36e9fd06-d366-4910-b643-65def87b8f69'],
-                blockExplorerUrls: ['https://bscscan.com/']
-              }]
-            });
-            logEl.textContent += `\n✅ Rede BSC adicionada com RPC customizado`;
-          } else {
-            console.error(switchError);
-            logEl.textContent += `\n❌ Erro ao trocar de rede: ${switchError.message}`;
           }
+        });
+
+        if (wasAdded) {
+          console.log('✅ Token adicionado!');
+        } else {
+          console.log('❌ O usuário rejeitou a adição do token.');
         }
-
-        window.ethereum.on('accountsChanged', (accounts) => {
-          logEl.textContent += `\n👤 Conta alterada: ${accounts[0]}`;
-        });
-
-        window.ethereum.on('chainChanged', (chainId) => {
-          logEl.textContent += `\n🔁 Rede alterada: ${chainId}`;
-          window.location.reload();
-        });
-
-      } catch (err) {
-        console.error("Erro ao conectar:", err);
-        logEl.textContent += `\n❌ Erro: ${err.message}`;
+      } catch (error) {
+        console.error('Erro ao adicionar token:', error);
       }
     }
   </script>
+
 </body>
 </html>
